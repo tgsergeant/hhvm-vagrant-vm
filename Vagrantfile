@@ -13,7 +13,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network :forwarded_port, guest: 81, host: 9081
 
   config.vm.network :private_network, ip: "192.168.33.10"
-  config.vm.synced_folder "hhvm/", "/home/vagrant/dev/hhvm", type: "nfs"
+  config.vm.synced_folder "codebases/hhvm/", "/home/vagrant/dev/hhvm", type: "nfs"
 
   config.vm.provider :virtualbox do |vb|
     vb.name = "HipHop VM"

@@ -1,3 +1,9 @@
+echo "deb http://ap-southeast-2.ec2.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
+deb http://ap-southeast-2.ec2.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
+deb http://ap-southeast-2.ec2.archive.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse" > tmp_sources.txt
+cat /etc/apt/sources.list >> tmp_sources.txt
+mv tmp_sources.txt /etc/apt/sources.list
+
 apt-get update
 
 echo Installing HHVM dependencies...
@@ -13,12 +19,12 @@ apt-get install -y git-core cmake g++ libboost1.48-dev libmysqlclient-dev \
 echo Upgrading gcc to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test
 apt-get update
-apt-get install -y gcc-4.7 g++-4.7
-update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.7 60 \
-                    --slave /usr/bin/g++ g++ /usr/bin/g++-4.7
+apt-get install -y gcc-4.8 g++-4.8
+update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.8 60 \
+                    --slave /usr/bin/g++ g++ /usr/bin/g++-4.8
 update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-4.6 40 \
                     --slave /usr/bin/g++ g++ /usr/bin/g++-4.6
-update-alternatives --set gcc /usr/bin/gcc-4.7
+update-alternatives --set gcc /usr/bin/gcc-4.8
 
 echo Installing nginx, php and other useful tools...
 apt-get install -y nginx-full \
@@ -38,15 +44,11 @@ cd /home/vagrant/dev
 export CMAKE_PREFIX_PATH=`pwd`
 export HPHP_HOME=`pwd`/hhvm
 
-echo Building GCC 4.8.2
-svn checkout svn://gcc.gnu.org/svn/gcc/tags/gcc_4_8_2_release/
-cd gcc_4_8_2_release
-
-
 echo Building libevent...
-git clone git://github.com/libevent/libevent.git
-cd libevent
-git checkout release-1.4.14b-stable
+wget https://github.com/libevent/libevent/archive/release-1.4.14b-stable.tar.gz -O libevent.tar.gz
+tar -xzf libevent.tar.gz
+rm libevent.tar.gz
+cd libevent-release-1.4.14b-stable
 cat ../hhvm/hphp/third_party/libevent-1.4.14.fb-changes.diff | patch -p1
 ./autogen.sh
 ./configure --prefix=$CMAKE_PREFIX_PATH
@@ -55,8 +57,10 @@ make install
 cd ..
 
 echo Building libCurl...
-git clone git://github.com/bagder/curl.git
-cd curl
+wget https://github.com/bagder/curl/archive/master.tar.gz -O curl.tar.gz
+tar -xzf curl.tar.gz
+rm curl.tar.gz
+cd curl-master
 ./buildconf
 ./configure --prefix=$CMAKE_PREFIX_PATH
 make -j$cores
