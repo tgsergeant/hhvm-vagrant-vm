@@ -1,6 +1,7 @@
-echo "deb http://ap-southeast-2.ec2.archive.ubuntu.com/ubuntu/ precise main restricted universe multiverse
-deb http://ap-southeast-2.ec2.archive.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse
-deb http://ap-southeast-2.ec2.archive.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse" > tmp_sources.txt
+echo "deb mirror://mirrors.ubuntu.com/mirrors.txt precise main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt precise-updates main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt precise-backports main restricted universe multiverse
+deb mirror://mirrors.ubuntu.com/mirrors.txt precise-security main restricted universe multiverse" > tmp_sources.txt
 cat /etc/apt/sources.list >> tmp_sources.txt
 mv tmp_sources.txt /etc/apt/sources.list
 
@@ -14,7 +15,11 @@ apt-get install -y git-core cmake g++ libboost1.48-dev libmysqlclient-dev \
   libboost-program-options1.48-dev libboost-filesystem1.48-dev libboost-thread1.48-dev \
   wget memcached libreadline-dev libncurses-dev libmemcached-dev libbz2-dev \
   libc-client2007e-dev php5-mcrypt php5-imagick libgoogle-perftools-dev \
-  libcloog-ppl0 libelf-dev libdwarf-dev subversion python-software-properties
+  libcloog-ppl0 libelf-dev libdwarf-dev subversion python-software-properties \
+  libmagickwand-dev
+
+echo Installing other tools...
+apt-get install -y vim
 
 echo Upgrading gcc to 4.8
 add-apt-repository ppa:ubuntu-toolchain-r/test
@@ -43,6 +48,9 @@ cores=5
 cd /home/vagrant/dev
 export CMAKE_PREFIX_PATH=`pwd`
 export HPHP_HOME=`pwd`/hhvm
+
+echo "export CMAKE_PREFIX_PATH='/home/vagrant/dev'
+HPHP_HOME='/home/vagrant/dev/hhvm'" >> /home/vagrant/.bashrc
 
 echo Building libevent...
 wget https://github.com/libevent/libevent/archive/release-1.4.14b-stable.tar.gz -O libevent.tar.gz
@@ -85,13 +93,17 @@ make install
 cd ..
 
 
-echo Building HHVM...
+echo Initialising HHVM...
 cd hhvm
 git submodule update --init
 cmake .
-#make -j$cores
 
 echo Starting services...
 /etc/init.d/nginx restart
 /etc/init.d/php5-fpm restart
 /etc/init.d/hhvm start
+
+echo To build hhvm, run:
+echo $ vagrant ssh
+echo $ cd dev/hhvm
+echo $ make -j4
